@@ -26,8 +26,8 @@ traindata_loader = torch.utils.data.DataLoader(train_data, batch_size = batch_si
 testdata_loader = torch.utils.data.DataLoader(test_data, batch_size = batch_size,
                                               shuffle=True, pin_memory=True)
 
-#device = "cuda:0" if torch.cuda.is_available() else "cpu"
-device = "cuda:0"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+#device = "cuda:0"
 
 print("Using device: " + device)
 
