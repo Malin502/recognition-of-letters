@@ -42,7 +42,7 @@ class NN(nn.Module):
 
     def forward(self, x):
         x = x.to(device)
-        print(x.shape)
+        #print(x.shape)
         x = self.layer1(x)
         x = self.layer2(x)
         x = x.view(x.size(0), -1)
@@ -71,7 +71,7 @@ def main():
     
     
     #検出範囲の設定
-    size = 50
+    size = 80
     x1 = int(width/2 - size)
     x2 = int(width/2 + size)
     y1 = int(height/2 - size)
@@ -103,7 +103,7 @@ def main():
            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
         
         
-        print(pred)
+        #print(pred)
         index = pred[0].argmax(0)
         predicted = classes[index]
         print(predicted)

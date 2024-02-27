@@ -5,7 +5,7 @@ from torchvision import datasets, transforms
 import torch.onnx
 import torch.nn.functional as F
 
-epochs = 12
+epochs = 20
 batch_size = 64
 
 
@@ -72,7 +72,7 @@ class NN(nn.Module):
 model = NN().to(device)
 
 loss_fn =  nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01)
+optimizer = optim.SGD(model.parameters(), lr=0.008)
 
 
 def train(dataloader, model, loss_fn, optimizer):
