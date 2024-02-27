@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torchvision import datasets, transforms
 import torch.onnx
 import torch.nn.functional as F
 
@@ -11,7 +10,7 @@ import numpy as np
 
 
 #Webカメラの設定
-DEVICE_ID = 0
+DEVICE_ID = 1
 WIDTH = 1280 
 HEIGHT = 720
 
@@ -27,21 +26,30 @@ class NN(nn.Module):
     
     def __init__(self):
         super(NN, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1) 
-        self.conv2 = nn.Conv2d(32, 128, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(128*7*7, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 26)
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=5, padding=2),
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(2))
+        
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(16, 32, kernel_size=5,padding=2),
+            nn.BatchNorm2d(32),
+            nn.ReLU(), 
+            nn.MaxPool2d(2))
+        
+        self.fc1 = nn.Linear(32*7*7, 27)
 
     def forward(self, x):
         x = x.to(device)
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2(x), 2))
-        x = x.view(-1, 128*7*7)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        
+        print(x.shape)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc1(x)
         return x
+
+
 
 def main():
     
@@ -85,3 +93,31 @@ def main():
         img = cv2.resize(img, (28, 28)) #サイズ変更=>28x28
         
         cv2.imshow("img", img)
+        
+        img = img/256.0 #正規化
+        img = img[np.newaxis, np.newaxis, :, :] #次元追加 (28,28) => (1,1,28,28)
+        pred = model(torch.tensor(img, dtype=torch.float32).to(device))
+        
+        
+        classes = ['None', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+           'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        
+        
+        print(pred)
+        index = pred[0].argmax(0)
+        predicted = classes[index]
+        print(predicted)
+        
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 0))
+        cv2.putText(frame, predicted, (10, int(height)-50), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255), 3, cv2.LINE_AA)
+        
+        cv2.imshow("frame", frame)
+        
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        
+    cap.release()
+    cv2.destroyAllWindows()
+    
+if __name__ == "__main__":
+    main()
